@@ -103,7 +103,7 @@ func main() {
 			XSSProtection:         "1; mode=block",
 			ContentTypeNosniff:    "nosniff",
 			XFrameOptions:         "SAMEORIGIN",
-			ContentSecurityPolicy: "default-src 'self'",
+			ContentSecurityPolicy: "ddefault-src 'self' blob: 'unsafe-inline' buttons.github.io api.github.com;",
 		}))
 	}
 
