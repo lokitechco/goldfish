@@ -4,7 +4,7 @@
 
 <p><img width="250" height="194" src="https://github.com/Caiyeon/goldfish/blob/master/frontend/client/assets/logo%402x.png"></p>
 
-<h3>Show support for development by starring this repo!</a></h3>
+<h3>Share with your colleagues and star this repo!</h3>
 
 </div>
 
@@ -18,17 +18,15 @@ Goldfish answers many auditing and administration questions that Vault API can't
 * Which policies, users, and tokens can access this particular secret path?
 * The unseal admins are working from home, but we need a policy changed.
 	* How do we generate a root token only for this change, and make sure it's revoked after?
-	* Optionally send the changeID to a slack channel, so admins can pull up the details and approve/reject
-* I store my policies on a Github repo. Can I deploy this all in one go? [See more](https://github.com/Caiyeon/goldfish/wiki/Features#request-policy-change-by-github-commit)
+* I store my policies on a Github repo. Can I deploy all my policies in one go? [See more](https://github.com/Caiyeon/goldfish/wiki/Features#request-policy-change-by-github-commit)
 * *Coming soon* If I remove this secret/policy, will anybody's workflow break?
 
 
 <!--
 -->
-## Running goldfish in production
+## [Deploy goldfish in production in minutes!](https://github.com/Caiyeon/goldfish/wiki/Production-Deployment)
 
-See: [Production Deployment](https://github.com/Caiyeon/goldfish/wiki/Production-Deployment)
-
+Seriously, the instructions fit on one screen!
 
 
 <!--
@@ -37,14 +35,14 @@ See: [Production Deployment](https://github.com/Caiyeon/goldfish/wiki/Production
 
 * [x] Hot-loadable server settings from a provided vault endpoint
 * [x] Displaying a vault endpoint as a 'bulletin board' in homepage
-* [x] **Logging in** with token, userpass, or github
+* [x] **Logging in** with token, userpass, github, or LDAP
 * [x] **Secret** Reading/editing/creating/listing
 * [x] **Auth** Searching/creating/listing/deleting
 * [x] **Mounts** Listing
 * [x] **Policies** Searching/Listing
 * [x] Encrypting and decrypting arbitrary strings using transit backend
 
-#### Planned major features: Soon<sup>TM</sup>
+#### Major features: [See wiki for more](https://github.com/Caiyeon/goldfish/wiki/Features)
 * [x] **DONE!** Searching tokens by policy [walkthrough](https://github.com/Caiyeon/goldfish/wiki/Features#searching-tokens)
 	- E.g. Display all tokens that have the policy 'admins'
 * [x] **DONE!** Searching policy by rule [walkthrough](https://github.com/Caiyeon/goldfish/wiki/Features#searching-policies)
@@ -59,7 +57,11 @@ See: [Production Deployment](https://github.com/Caiyeon/goldfish/wiki/Production
 	- Change dozens of policies in one go!
 * [ ] Resource dependency chain
 	- E.g. Will removing a particular policy affect current users?
-* [ ] SAML to LDAP integration
+	- Will removing a mount or secret path affect current users?
+* [ ] Certificate management panel
+	- If vault is a certificate authority, there should be a user-friendly panel of details and statistics
+* [ ] Moving root tokens away from the human eye
+	- More root operations like mount tuning should also be done via request & approval basis, like policy changes
 * [ ] Secret backend specific tools (e.g. AWS backend)
 
 
@@ -92,7 +94,7 @@ See: [Production Deployment](https://github.com/Caiyeon/goldfish/wiki/Production
 ## Developing or testing goldfish
 
 #### Running locally
-You'll need go (v1.8), npm (>=3), and nodejs (>=5).
+You'll need go (v1.8), npm (>=3), and nodejs (>=7).
 
 ```bash
 # hashicorp vault ui
@@ -120,14 +122,21 @@ vault write auth/approle/role/goldfish role_name=goldfish secret_id_ttl=5m token
 token_max_ttl=720h secret_id_num_uses=1 policies=default,goldfish
 vault write auth/approle/role/goldfish/role-id role_id=goldfish
 
+# goldfish reads run-time config from a vault secret
+vault write secret/goldfish DefaultSecretPath="secret/" TransitBackend="transit" \
+UserTransitKey="usertransit" ServerTransitKey="goldfish" BulletinPath="secret/bulletins/"
+
+# jq is a very useful tool for parsing json on the fly
+sudo apt-get install jq
+
 # build the backend server
-go install
+go install github.com/caiyeon/goldfish
 
 # run backend server with secret_id generated from approle
 # -dev arg skips reading settings from vault and uses a default set
 goldfish -dev -vault_token $(vault write -f -wrap-ttl=20m \
 -format=json auth/approle/role/goldfish/secret-id \
-| jq -r .wrap_info.token)
+| jq -r .wrap_info.token) -config_path=secret/goldfish
 
 # run frontend in dev mode (with hot reload)
 cd frontend
@@ -162,12 +171,11 @@ vagrant up --provision
 <!--
 -->
 ## Development
-Goldfish is being actively maintained (with new features every 1-2 weeks).
+Goldfish is in very active development:
 
-Contributions are welcomed. Feel free to pick up an issue and make a pull request, or open a new issue for a feature enhancement.
+![](screenshots/Pulse.png)
 
-The Vagrant setup should provide a consistent dev environment.
-
+Pull requests and feature requests are welcome. Feel free to suggest new workflows by opening issues.
 
 
 <!--
