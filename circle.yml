@@ -1,11 +1,11 @@
 dependencies:
   override:
     # force clean cache
-    - rm -rf /home/ubuntu/.go_workspace/src/github.com/caiyeon/goldfish
+    - rm -rf /home/ubuntu/.go_workspace/src
     # make parent folder (since it shouldn't exist now)
     - mkdir -p /home/ubuntu/.go_workspace/src/github.com/caiyeon/goldfish
     # copy cloned folder into $GOPATH so vendor folder will work
-    - cd .. && mv -f goldfish /home/ubuntu/.go_workspace/src/github.com/caiyeon/goldfish
+    - cd .. && mv -f goldfish /home/ubuntu/.go_workspace/src/github.com/caiyeon
 
 test:
   override:
