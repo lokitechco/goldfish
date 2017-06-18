@@ -1,7 +1,7 @@
 dependencies:
   override:
-    - echo "Govendor should contain all dependencies"
-    # - go get -t -d -v ./...
+    - rm -rf /home/ubuntu/.go_workspace/src/github.com/caiyeon/goldfish
+    - cd .. && mv -f goldfish /home/ubuntu/.go_workspace/src/github.com/caiyeon/goldfish
 
 test:
   override:
@@ -22,3 +22,5 @@ test:
         fi
       :
           parallel: true # make full use of 2 containers
+          pwd:
+            /home/ubuntu/.go_workspace/src/github.com/caiyeon/goldfish
