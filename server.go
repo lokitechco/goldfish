@@ -90,6 +90,7 @@ func main() {
 
 	// instantiate echo web server
 	e := echo.New()
+	e.HideBanner = true
 
 	// setup middleware
 	e.Use(middleware.Logger())
@@ -160,6 +161,7 @@ func main() {
 
 	e.GET("/api/secrets", handlers.GetSecrets())
 	e.POST("/api/secrets", handlers.PostSecrets())
+	e.DELETE("/api/secrets", handlers.DeleteSecrets())
 
 	e.GET("/api/bulletins", handlers.GetBulletins())
 

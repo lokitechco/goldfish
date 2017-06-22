@@ -43,6 +43,12 @@
               Edit Secret
             </a>
 
+            <a v-if="editMode === false && currentPathType === 'Secret'"
+              class="button is-danger is-small is-marginless"
+              v-on:click="deleteSecret(currentPath)">
+              Delete Secret
+            </a>
+
             <a v-if="editMode === true && currentPathType === 'Secret'"
               class="button is-success is-small is-marginless"
               v-on:click="saveEdit">
@@ -117,6 +123,12 @@
                     <a v-if="editMode && currentPathType === 'Secret'" @click="deleteItem(index)">
                     <span class="icon">
                       <i class="fa fa-times-circle"></i>
+                    </span>
+                    </a>
+
+                    <a v-if="currentPathType === 'Path' && entry.type === 'Secret'" @click="deleteSecret(currentPath + entry.path)">
+                    <span class="icon">
+                      <i class="fa fa-trash-o"></i>
                     </span>
                     </a>
                   </td>
@@ -299,6 +311,7 @@ export default {
       this.newKey = ''
       this.newValue = ''
       this.editMode = false
+      this.confirmDelete = false
 
       this.$http.get('/api/secrets?path=' + path).then((response) => {
         this.tableData = []
@@ -455,7 +468,58 @@ export default {
         type: 'warning',
         duration: 10000
       })
+    },
+
+    deleteSecret: function (path) {
+      // check if current path is valid
+      if (!path.includes('/')) {
+        this.$notify({
+          title: 'Invalid',
+          message: 'Cannot delete a mount',
+          type: 'warning'
+        })
+        return
+      }
+
+      // recursive deletion may come later, but not now
+      if (path.endsWith('/')) {
+        this.$notify({
+          title: 'Invalid',
+          message: 'Cannot delete a path',
+          type: 'warning'
+        })
+        return
+      }
+
+      // request deletion of secret
+      this.$http.delete('/api/secrets?path=' + path, {
+        headers: {'X-CSRF-Token': this.csrf}
+      })
+      .then((response) => {
+        this.$notify({
+          title: 'Success!',
+          message: 'Secret deleted!',
+          type: 'success'
+        })
+        this.editMode = false
+
+        if (this.currentPath === path) {
+          // if deleting current secret, wipe table data
+          this.tableData = []
+        } else {
+          // if deleting a row, find it and remove it
+          for (var i = 0; i < this.tableData.length; i++) {
+            if (this.currentPath + this.tableData[i].path === path) {
+              this.deleteItem(i)
+            }
+          }
+        }
+      })
+      .catch((error) => {
+        this.$onError(error)
+      })
     }
+
   }
 }
 </script>
@@ -467,6 +531,10 @@ export default {
 
   .control .button {
     margin: inherit;
+  }
+
+  .fa-trash-o {
+    color: red;
   }
 
   .fa-times-circle {

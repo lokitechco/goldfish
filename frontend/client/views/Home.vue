@@ -30,7 +30,6 @@ export default {
       showCloseButton: true
     })
   }
-
 }
 </script>
 

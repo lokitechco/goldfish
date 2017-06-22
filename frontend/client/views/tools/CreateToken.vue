@@ -12,7 +12,7 @@
           <!-- Role (if user can list them) -->
           <div v-if="availableRoles && availableRoles.length > 0" class="field">
             <label class="label">Load preset from role</label>
-            <div class="control">
+            <div class="control has-icons-right">
               <span class="select">
                 <select v-model="selectedRole" @change="loadRoleDetails(selectedRole)">
                   <option v-for="role in availableRoles">
@@ -265,7 +265,7 @@
         <!-- Right column -->
         <div class="column is-6">
 
-          <!-- If user does not have capability to list roles -->
+          <!-- Warnings -->
           <div v-if="availableRoles === null" class="field">
             <article class="message is-warning">
               <div class="message-body">
@@ -273,12 +273,18 @@
               </div>
             </article>
           </div>
-
-          <!-- Role warning -->
           <div v-if="selectedRole" class="field">
             <article class="message is-warning">
               <div class="message-body">
                 <strong>Warning: Some options may be overridden by role details</strong>
+              </div>
+            </article>
+          </div>
+          <div class="field"
+          v-if="this.max_ttl != '' && (stringToSeconds(this.ttl) > stringToSeconds(this.max_ttl))">
+            <article class="message is-warning">
+              <div class="message-body">
+                <strong>Warning: ttl is longer than max_ttl</strong>
               </div>
             </article>
           </div>
