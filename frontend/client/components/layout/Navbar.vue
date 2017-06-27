@@ -24,14 +24,14 @@
         <div class="nav-right is-flex">
 
           <!-- session dropdown -->
-          <div class="nav-item">
+          <div v-if="session" class="nav-item">
             <dropdown animation="ani-slide-y"
             :position="position"
-            :visible="nav">
+            :visible="profileDropdown">
 
               <!-- profile button -->
               <a class="button is-primary is-outlined"
-              @click="nav = !nav">
+              @click="profileDropdown = !profileDropdown">
                 <span class="icon">
                   <i class="fa fa-user"></i>
                 </span>
@@ -46,8 +46,9 @@
                     token-public-demo-token
                   </p>
                   <ul class="menu-list">
-                    <li>Token expires in {{tokenExpiresIn}}</li>
-                    <li><a>Customers</a></li>
+                    <li v-if="tokenExpiresIn === ''">Token will never expire</li>
+                    <li v-else>Token expires {{tokenExpiresIn}}</li>
+                    <li>Cookie expires {{cookieExpiresIn}}</li>
                   </ul>
                 </aside>
                 </div>
@@ -98,16 +99,15 @@ export default {
 
   data () {
     return {
-      nav: false,
+      profileDropdown: false,
       position: ['center', 'bottom', 'center', 'top'],
-      now: new Date()
+      now: moment()
     }
   },
 
   mounted: function () {
     setInterval(() => {
-      this.now = new Date(Date.now())
-      // console.log(this.now - Date.parse(this.session['cookie_expiry']))
+      this.now = moment()
     }, 1000)
 
     // if session cookie is still valid, load session data
@@ -143,7 +143,17 @@ export default {
       if (this.session === null) {
         return ''
       }
-      return moment(-1 * (this.now - Date.parse(this.session['cookie_expiry']))).format('h:mm:ss')
+      if (this.session['token_expiry'] === 'never') {
+        return ''
+      }
+      return this.now.to(moment(this.session['token_expiry'], 'ddd, h:mm:ss A'))
+    },
+
+    cookieExpiresIn: function () {
+      if (this.session === null) {
+        return ''
+      }
+      return this.now.to(moment(this.session['cookie_expiry'], 'ddd, h:mm:ss A'))
     }
   },
 
