@@ -186,6 +186,7 @@
 </template>
 
 <script>
+import moment from 'moment'
 export default {
   data () {
     return {
@@ -270,21 +271,19 @@ export default {
         this.clearFormData()
 
         // construct session data
-        this.session = {
+        var newSession = {
           'type': this.type,
           'display_name': response.data.data['display_name'],
           'meta': response.data.data['meta'],
           'policies': response.data.data['policies'],
           'renewable': response.data.data['renewable'],
-          'token_expiry': response.data.data['ttl'] === 0 ? 'never' : new Date(Date.now() + response.data.data['ttl'] * 1000).toString(),
-          'cookie_expiry': new Date(Date.now() + 28800000).toString() // 8 hours from now
+          'token_expiry': response.data.data['ttl'] === 0 ? 'never' : moment().add(response.data.data['ttl'], 'seconds').format('ddd, h:mm:ss A'),
+          'cookie_expiry': moment().add(8, 'hours').format('ddd, h:mm:ss A') // 8 hours from now
         }
 
-        // store session data in localstorage
-        window.localStorage.setItem('session', JSON.stringify(this.session))
-
-        // mutate state of vuex
-        this.$store.commit('setSession', this.session)
+        // store session data in localstorage and mutate vuex state
+        window.localStorage.setItem('session', JSON.stringify(newSession))
+        this.$store.commit('setSession', newSession)
 
         // notify user of generated client-token
         if (this.type === 'Userpass' || this.type === 'LDAP') {
