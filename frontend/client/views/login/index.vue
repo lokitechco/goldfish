@@ -186,6 +186,7 @@
 </template>
 
 <script>
+import moment from 'moment'
 export default {
   data () {
     return {
@@ -276,6 +277,7 @@ export default {
         // store session data in localstorage and mutate vuex state
         window.localStorage.setItem('session', JSON.stringify(newSession))
         this.$store.commit('setSession', newSession)
+        console.log(moment(-1 * (Date.now())).format('h:mm:ss'))
 
         // notify user of generated client-token
         if (this.type === 'Userpass' || this.type === 'LDAP') {
