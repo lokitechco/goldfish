@@ -135,14 +135,17 @@ export default {
   data () {
     return {
       csrf: '',
-      supportedResourceTypes: ['Policy'],
+      supportedResourceTypes: ['Policy', 'Mount'],
       resourceType: '',
       loading: false,
       confirmed: false,
       results: [],
 
       policies: [],
-      selectedPolicy: ''
+      selectedPolicy: '',
+
+      mounts: [],
+      selectedMount: ''
     }
   },
 
@@ -201,11 +204,14 @@ export default {
           case 'Approles':
             return this.searchPolicyApproles()
           default:
-            this.$notify({
-              title: 'Not supported',
-              message: 'Search type ' + this.searchType + ' is not supported',
-              type: 'warning'
-            })
+            // fallthrough to notification
+        }
+      } else if (resourceType === 'Mount') {
+        switch (searchType) {
+          case 'Policies':
+            return this.searchMountPolicies()
+          default:
+            // fallthrough to notification
         }
       } else {
         this.$notify({
@@ -214,6 +220,11 @@ export default {
           type: 'warning'
         })
       }
+      this.$notify({
+        title: 'Not supported',
+        message: 'Search type ' + this.searchType + ' is not supported',
+        type: 'warning'
+      })
     },
 
     listPolicies: function () {
@@ -364,6 +375,43 @@ export default {
       .catch((error) => {
         this.$onError(error)
         this.purgeResult('Approles')
+      })
+    },
+
+    searchMountPolicies: function () {
+      // remove previously fetched result if it exists
+      this.purgeResult('Policies')
+      var result = {
+        Type: 'Policies',
+        Loading: 1,
+        Subtype: 'Policy names',
+        Dependents: []
+      }
+      this.results.push(result)
+
+      // fetch all policies
+      this.$http.get('/api/policy').then((response) => {
+        let policies = response.data.result
+        result.Loading = policies.length
+
+        // for each policy, check rules for mount
+        for (var i = 0; i < policies.length; i++) {
+          this.$http.get('/api/policy?policy=' + policies[i]).then((response) => {
+            // prefix with quote marks to ensure it's the mount that is matched
+            if (response.data.result.include('"' + this.selectedMount) ||
+              response.data.result.include('\'' + this.selectedMount)) {
+              result.Dependents.push(policies[i])
+            }
+            result.Loading = result.Loading - 1 || false
+          })
+          .catch((error) => {
+            result.Loading = result.Loading - 1 || false
+            this.$onError(error)
+          })
+        }
+      })
+      .catch((error) => {
+        this.$onError(error)
       })
     }
 
